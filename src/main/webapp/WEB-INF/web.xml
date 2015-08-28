@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+
+    <display-name>Example Spring Security Application</display-name>
+  	<description>Web application that demonstrates Spring Security functionality with Active Directory.</description>
+
+    <!-- How long do inactive sessions stay around? -->
+  	<session-config>
+  		<session-timeout>240</session-timeout>
+  	</session-config>
+
+    <!-- Security filter (must come first) -->
+   	<filter>
+  		<filter-name>springSecurityFilterChain</filter-name>
+  		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+  	</filter>
+  	<filter-mapping>
+  		<filter-name>springSecurityFilterChain</filter-name>
+  		<url-pattern>/*</url-pattern>
+  	</filter-mapping>
+
+    <!-- 
+    	Context parameters for the web application 
+    -->
+    <!-- Sometimes its nice to break up our spring context into modular parts. -->
+    <context-param>
+      <param-name>contextConfigLocation</param-name>
+      <param-value>
+        /WEB-INF/spring/security-context.xml
+      </param-value>
+    </context-param>
+
+    <!-- Anything in src/main/resources will be on the classpath. -->
+    <context-param>
+        <param-name>log4jConfigLocation</param-name>
+        <param-value>classpath:log4j.properties</param-value>
+    </context-param>
+    <context-param>
+        <param-name>log4jExposeWebAppRoot</param-name>
+        <param-value>false</param-value>
+    </context-param>
+
+    <!-- 
+    	Listeners 
+    -->
+	<listener>
+	    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+    <listener>
+        <description>Pulls in logging configuration to the web application</description>
+        <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
+    </listener>
+
+    <listener>
+        <!-- http://learningviacode.blogspot.com/2013/12/listening-for-session-creation.html -->
+        <description>Listens for HTTP Session events and routes them to Spring.</description>
+        <listener-class>org.springframework.security.web.session.HttpSessionEventPublisher</listener-class>
+    </listener>
+
+    <!-- 
+    	The servlet is the heart of the web application. Its where url requests are sent for processing.
+        The Spring DispatcherServlet will look for a configuration file named after the servlet. 
+        In this example, it will be dispatcher-servlet.xml.
+    -->
+    <servlet>
+        <servlet-name>dispatcher</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <load-on-startup>2</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>dispatcher</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+</web-app>

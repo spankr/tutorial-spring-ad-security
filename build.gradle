@@ -1,0 +1,55 @@
+apply plugin: "java"
+apply plugin: "war"
+apply plugin: "eclipse-wtp"
+
+group = "org.example"
+version = 1.0
+
+repositories {
+maven {
+        url "http://mplswin-02:8081/nexus/content/groups/public"
+    }
+    mavenCentral()
+}
+
+// Extra User-defined Properties
+ext {
+  springVersion = '4.2.0.RELEASE'
+  springSecurity = '4.0.2.RELEASE'
+  slf4jVersion = '1.7.12'
+}
+
+// Excluding commons-logging as a transitive dependency
+// We want all instances of commons-logging gone as we're using slf4j
+configurations {
+  all*.exclude group: 'commons-logging'
+}
+
+dependencies {
+  compile group: 'commons-io', name: 'commons-io', version: '1.4'
+
+ // Web Servlet libraries. The application container(Tomcat) provides most of this.
+  compile group: 'javax.servlet', name: 'jstl', version: '1.2'
+  providedCompile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0'
+
+  // Logging
+  compile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
+  runtime group: 'org.slf4j', name: 'jcl-over-slf4j', version: slf4jVersion
+  runtime group: 'org.slf4j', name: 'slf4j-log4j12', version: slf4jVersion
+
+  // Spring Core
+  compile group: 'org.springframework', name: 'spring-context', version: springVersion
+  compile group: 'org.springframework', name: 'spring-webmvc', version: springVersion
+
+  // Spring Security
+  compile group: 'org.springframework.security', name: 'spring-security-config', version: springSecurity
+  compile group: 'org.springframework.security', name: 'spring-security-ldap', version: springSecurity
+  compile group: 'org.springframework.security', name: 'spring-security-taglibs', version: springSecurity
+}
+
+// TESTING: I want to log test results in the build output
+test {
+  testLogging {
+    events "passed", "skipped", "failed"
+  }
+}

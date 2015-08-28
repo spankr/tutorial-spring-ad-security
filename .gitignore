@@ -1,0 +1,11 @@
+# The Ignore File
+## Build artifacts
+target
+bin
+build
+
+## User-specific files
+.classpath
+.project
+.settings
+.gradle

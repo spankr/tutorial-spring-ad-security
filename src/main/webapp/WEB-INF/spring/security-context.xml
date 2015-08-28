@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:sec="http://www.springframework.org/schema/security"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	           http://www.springframework.org/schema/beans/spring-beans.xsd
+	           http://www.springframework.org/schema/context
+	           http://www.springframework.org/schema/context/spring-context.xsd
+               http://www.springframework.org/schema/security
+               http://www.springframework.org/schema/security/spring-security.xsd">
+
+	<!-- Load a config file that contains the values for ${sample.one.view}, etc -->
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+	     <property name="locations">
+	         <list>
+	             <value>classpath:ldap.properties</value>
+	         </list>
+	     </property>
+	</bean>
+
+	<sec:http use-expressions="true" auto-config='true'>
+		<sec:access-denied-handler error-page="/access-denied" />
+		<!-- see http://docs.spring.io/spring-security/site/docs/3.0.x/reference/el-access.html -->
+		<sec:intercept-url pattern="/login*" access="permitAll" />
+		<sec:intercept-url pattern="/resources/**" access="permitAll" />
+		<sec:intercept-url pattern="/default-greeting" access="hasRole('fg_Agile_Team_CIC')"/>
+		<sec:intercept-url pattern="/**" access="isAuthenticated()"/>
+		<sec:form-login login-page='/login' default-target-url="/index" authentication-failure-url="/login?error=Invalid Username or Password"/>
+		<sec:logout logout-success-url="/login" />
+		<sec:headers />
+	</sec:http>
+
+	<sec:global-method-security pre-post-annotations="enabled" />
+
+	<!-- Active Directory Configuration -->
+	<sec:authentication-manager>
+		<sec:authentication-provider ref="adAuthenticationProvider" />
+	</sec:authentication-manager>
+
+	<bean id="adAuthenticationProvider" class="org.springframework.security.ldap.authentication.ad.ActiveDirectoryLdapAuthenticationProvider">
+		<constructor-arg value="${ad.domain}" />
+		<constructor-arg value="${ldap.url}" />
+		<property name="useAuthenticationRequestCredentials" value="true" />
+		<property name="convertSubErrorCodesToExceptions" value="true" />
+	</bean>
+	
+	<!-- New in 4.x! Roles must start with "ROLE_" by default. This bean removes that requirement. -->
+	<bean class="org.example.sec.DefaultRolesPrefixPostProcessor" />
+</beans>
